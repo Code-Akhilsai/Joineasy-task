@@ -4,15 +4,17 @@ import api from "../Services/api.js";
 
 export default function Register() {
   const navigate = useNavigate();
+
   const [role, setRole] = useState("student");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
-    try {
-      e.preventDefault();
+    e.preventDefault();
 
+    try {
       const response = await api.post("/auth/register", {
         name,
         email,
@@ -22,11 +24,12 @@ export default function Register() {
 
       if (response.status !== 201) {
         return alert("User failed to register");
-      } else {
-        navigate("/login", { replace: true });
       }
+
+      navigate("/login", { replace: true });
     } catch (error) {
-      return console.log(`Error:${error}`);
+      console.error("Registration error:", error);
+      alert(error.response?.data?.message || "Registration failed");
     }
   };
 
@@ -42,9 +45,11 @@ export default function Register() {
           >
             Join<span className="text-indigo-400">Eazy</span>
           </Link>
+
           <h2 className="text-xl font-semibold text-slate-200">
             Create New Account
           </h2>
+
           <p className="text-xs text-slate-400">
             Join JoinEazy as a Student or Professor
           </p>
@@ -63,6 +68,7 @@ export default function Register() {
           >
             Student Account
           </button>
+
           <button
             type="button"
             onClick={() => setRole("professor")}
@@ -77,10 +83,12 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
               Full Name
             </label>
+
             <input
               type="text"
               required
@@ -91,10 +99,12 @@ export default function Register() {
             />
           </div>
 
+          {/* Email */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
               Email Address
             </label>
+
             <input
               type="email"
               required
@@ -109,20 +119,33 @@ export default function Register() {
             />
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none transition-colors"
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 pr-16 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none transition-colors"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 hover:text-white cursor-pointer"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
+          {/* Register */}
           <button
             type="submit"
             className="w-full py-3 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/30 cursor-pointer"

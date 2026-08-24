@@ -4,9 +4,11 @@ import api from "../Services/api.js";
 
 export default function Login() {
   const navigate = useNavigate();
+
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,7 +18,7 @@ export default function Login() {
         email,
         password,
       });
-    
+
       const user = response.data.user;
 
       localStorage.setItem("user", JSON.stringify(user));
@@ -43,7 +45,11 @@ export default function Login() {
           >
             Join<span className="text-indigo-400">Eazy</span>
           </Link>
-          <h2 className="text-xl font-semibold text-slate-200">Welcome Back</h2>
+
+          <h2 className="text-xl font-semibold text-slate-200">
+            Welcome Back
+          </h2>
+
           <p className="text-xs text-slate-400">
             Sign in to access your dashboard
           </p>
@@ -62,6 +68,7 @@ export default function Login() {
           >
             Student Login
           </button>
+
           <button
             type="button"
             onClick={() => setRole("professor")}
@@ -76,10 +83,12 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
               Email Address
             </label>
+
             <input
               type="email"
               required
@@ -94,20 +103,33 @@ export default function Login() {
             />
           </div>
 
+          {/* Password */}
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none transition-colors"
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-4 py-2.5 pr-16 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none transition-colors"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 hover:text-white cursor-pointer"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
+          {/* Login */}
           <button
             type="submit"
             className="w-full py-3 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/30 cursor-pointer"
