@@ -1,6 +1,4 @@
 import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -12,7 +10,7 @@ import group_router from "../routes/group.routes.js";
 import user_router from "../routes/user.routes.js";
 import assignment_router from "../routes/assignment.routes.js";
 const app = express();
-
+dotenv.config();
 const port = process.env.PORT;
 
 app.use(express.json());
