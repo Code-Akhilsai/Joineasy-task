@@ -1,37 +1,33 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import api from "../Services/api.js"
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../Services/api.js";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [role, setRole] = useState('student');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [role, setRole] = useState("student");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async(e) => {
-    try{
-   e.preventDefault();
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
 
-   const response = await api.post("/auth/register",{name,email,password});
+      const response = await api.post("/auth/register", {
+        name,
+        email,
+        password,
+        role: role === "professor" ? "admin" : "student",
+      });
 
-   if(response.status!==201) {
-    return alert("User failed to register");
-  }
-   else{
-    navigate('/student',{replace:true});
-   }
-
-
+      if (response.status !== 201) {
+        return alert("User failed to register");
+      } else {
+        navigate("/login", { replace: true });
+      }
+    } catch (error) {
+      return console.log(`Error:${error}`);
     }
-
-    catch(error){
-
-      return console.log(`Error:${error}`)
-
-    }
- 
-   
   };
 
   return (
@@ -40,29 +36,40 @@ export default function Register() {
 
       <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 p-8 rounded-2xl backdrop-blur-xl shadow-2xl space-y-6">
         <div className="text-center space-y-2">
-          <Link to="/" className="inline-block text-2xl font-bold text-white tracking-tight">
+          <Link
+            to="/"
+            className="inline-block text-2xl font-bold text-white tracking-tight"
+          >
             Join<span className="text-indigo-400">Eazy</span>
           </Link>
-          <h2 className="text-xl font-semibold text-slate-200">Create New Account</h2>
-          <p className="text-xs text-slate-400">Join JoinEazy as a Student or Professor</p>
+          <h2 className="text-xl font-semibold text-slate-200">
+            Create New Account
+          </h2>
+          <p className="text-xs text-slate-400">
+            Join JoinEazy as a Student or Professor
+          </p>
         </div>
 
         {/* Role Toggle */}
         <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold">
           <button
             type="button"
-            onClick={() => setRole('student')}
+            onClick={() => setRole("student")}
             className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
-              role === 'student' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+              role === "student"
+                ? "bg-indigo-600 text-white"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Student Account
           </button>
           <button
             type="button"
-            onClick={() => setRole('professor')}
+            onClick={() => setRole("professor")}
             className={`flex-1 py-2 rounded-lg transition-all cursor-pointer ${
-              role === 'professor' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-white'
+              role === "professor"
+                ? "bg-purple-600 text-white"
+                : "text-slate-400 hover:text-white"
             }`}
           >
             Professor Account
@@ -71,7 +78,9 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Full Name
+            </label>
             <input
               type="text"
               required
@@ -83,19 +92,27 @@ export default function Register() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Email Address
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={role === 'student' ? 'student@university.edu' : 'professor@university.edu'}
+              placeholder={
+                role === "student"
+                  ? "student@university.edu"
+                  : "professor@university.edu"
+              }
               className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+            <label className="block text-xs font-medium text-slate-300 mb-1">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -110,13 +127,16 @@ export default function Register() {
             type="submit"
             className="w-full py-3 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-600/30 cursor-pointer"
           >
-            Register as {role === 'student' ? 'Student' : 'Professor'}
+            Register as {role === "student" ? "Student" : "Professor"}
           </button>
         </form>
 
         <div className="text-center text-xs text-slate-400 pt-2">
-          Already have an account?{' '}
-          <Link to="/login" className="text-indigo-400 font-semibold hover:underline">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-indigo-400 font-semibold hover:underline"
+          >
             Sign In here
           </Link>
         </div>

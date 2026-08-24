@@ -12,10 +12,9 @@ const loginController = async (req, res) => {
       });
     }
 
-    const result = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(401).json({
@@ -33,19 +32,21 @@ const loginController = async (req, res) => {
       });
     }
 
+    const secretKey = process.env.JWT_SECRET || process.env.JWT_SECREATE_KEY;
+
     const token = jwt.sign(
       {
         id: user.id,
         role: user.role,
       },
-      process.env.JWT_SECREATE_KEY,
-      { expiresIn: "1d" }
+      secretKey,
+      { expiresIn: "1d" },
     );
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none"
     });
 
     res.status(200).json({
@@ -65,4 +66,4 @@ const loginController = async (req, res) => {
   }
 };
 
-export default loginController
+export default loginController;
