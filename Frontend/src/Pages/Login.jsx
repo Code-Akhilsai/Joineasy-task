@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import api from "../Services/api.js"
 
 export default function Login() {
   const navigate = useNavigate();
@@ -7,14 +8,24 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (role === 'student') {
-      navigate('/student');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await api.post("/auth/login", {
+      email,
+      password,
+    });
+
+    if (response.data.user.role === "student") {
+      navigate("/student",{replace:true});
     } else {
-      navigate('/admin');
+      navigate("/admin",{replace:true});
     }
-  };
+  } catch (error) {
+    alert(error.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
