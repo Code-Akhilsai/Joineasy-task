@@ -19,7 +19,10 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("submissions");
   const [submissions, setSubmissions] = useState([]);
   const [groups, setGroups] = useState([]);
-
+   const [admin, setAdmin] = useState({
+    name: "",
+    email: "",
+   });
   const [newAssignment, setNewAssignment] = useState({
     title: "",
     course: "",
