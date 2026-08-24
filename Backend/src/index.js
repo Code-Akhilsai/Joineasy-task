@@ -22,6 +22,8 @@ app.use(
   }),
 );
 
+app.post("/",(req,res)=>{});
+
 app.use("/api/auth", register_router);
 app.use("/api/auth", login_router);
 app.use("/api/submissions", submission_router);
