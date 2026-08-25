@@ -22,7 +22,9 @@ app.use(
   }),
 );
 
-app.post("/",(req,res)=>{});
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.use("/api/auth", register_router);
 app.use("/api/auth", login_router);
