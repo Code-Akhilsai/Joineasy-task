@@ -30,6 +30,8 @@ export default function AdminDashboard() {
     description: "",
   });
 
+  const [assignments, setAssignments] = useState([]);
+  const [editingAssignment, setEditingAssignment] = useState(null);
   const [postSuccessMsg, setPostSuccessMsg] = useState("");
 
   // Fetch admin profile and data on mount
@@ -91,6 +93,7 @@ export default function AdminDashboard() {
     fetchGroups();
 
     fetchAdminProfile();
+    fetchAssignments();
   }, []);
 
   // Post New Assignment Handler
@@ -141,6 +144,48 @@ export default function AdminDashboard() {
       console.error("Failed to create assignment:", error);
 
       alert(error.response?.data?.message || "Failed to create assignment");
+    }
+  };
+
+  const fetchAssignments = async () => {
+    try {
+      const response = await api.get("/assignments/all", {
+        withCredentials: true,
+      });
+
+      setAssignments(response.data.assignments || []);
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+    }
+  };
+
+  const handleEditAssignment = async (e) => {
+    e.preventDefault();
+
+    try {
+      await api.put(
+        `/assignments/${editingAssignment.id}`,
+        {
+          title: editingAssignment.title,
+          course: editingAssignment.course,
+          professor: editingAssignment.professor,
+          description: editingAssignment.description,
+          dueDate: editingAssignment.dueDate,
+          oneDriveUrl: editingAssignment.oneDriveUrl,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      setEditingAssignment(null);
+      await fetchAssignments();
+
+      alert("Assignment updated successfully");
+    } catch (error) {
+      console.error("Failed to update assignment:", error);
+
+      alert(error.response?.data?.message || "Failed to update assignment");
     }
   };
 
@@ -325,7 +370,84 @@ export default function AdminDashboard() {
             </svg>
             Post New Assignment
           </button>
+
+          <button
+            onClick={() => setActiveTab("assignments")}
+            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+              activeTab === "assignments"
+                ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            Manage Assignments
+          </button>
         </div>
+
+        {activeTab === "assignments" && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                Manage Assignments
+              </h2>
+              <p className="text-slate-400 text-xs mt-1">
+                View and edit published assignments.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {assignments.length === 0 ? (
+                <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-500">
+                  No assignments available.
+                </div>
+              ) : (
+                assignments.map((assignment) => (
+                  <div
+                    key={assignment.id}
+                    className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4"
+                  >
+                    <div>
+                      <span className="text-xs font-semibold text-indigo-400">
+                        {assignment.course}
+                      </span>
+
+                      <h3 className="text-lg font-bold text-white mt-1">
+                        {assignment.title}
+                      </h3>
+                    </div>
+
+                    <p className="text-sm text-slate-400 line-clamp-2">
+                      {assignment.description}
+                    </p>
+
+                    <div className="text-xs text-slate-400">
+                      Due:{" "}
+                      <span className="text-slate-200">
+                        {new Date(assignment.due_date).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        setEditingAssignment({
+                          ...assignment,
+                          dueDate: assignment.due_date
+                            ? new Date(assignment.due_date)
+                                .toISOString()
+                                .slice(0, 16)
+                            : "",
+                          oneDriveUrl: assignment.onedrive_link,
+                        })
+                      }
+                      className="w-full px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Edit Assignment
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
 
         {/* TAB 1: SUBMISSIONS OVERVIEW TABLE */}
         {activeTab === "submissions" && (
@@ -616,6 +738,133 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {editingAssignment && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white">
+                    Edit Assignment
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Update assignment details.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setEditingAssignment(null)}
+                  className="text-slate-400 hover:text-white text-xl cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleEditAssignment} className="space-y-4">
+                <input
+                  type="text"
+                  required
+                  value={editingAssignment.title}
+                  onChange={(e) =>
+                    setEditingAssignment({
+                      ...editingAssignment,
+                      title: e.target.value,
+                    })
+                  }
+                  placeholder="Assignment Title"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none"
+                />
+
+                <input
+                  type="text"
+                  required
+                  value={editingAssignment.course}
+                  onChange={(e) =>
+                    setEditingAssignment({
+                      ...editingAssignment,
+                      course: e.target.value,
+                    })
+                  }
+                  placeholder="Course"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none"
+                />
+
+                <input
+                  type="text"
+                  required
+                  value={editingAssignment.professor || ""}
+                  onChange={(e) =>
+                    setEditingAssignment({
+                      ...editingAssignment,
+                      professor: e.target.value,
+                    })
+                  }
+                  placeholder="Professor"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none"
+                />
+
+                <input
+                  type="datetime-local"
+                  required
+                  value={editingAssignment.dueDate}
+                  onChange={(e) =>
+                    setEditingAssignment({
+                      ...editingAssignment,
+                      dueDate: e.target.value,
+                    })
+                  }
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none scheme-dark"
+                />
+
+                <input
+                  type="url"
+                  required
+                  value={editingAssignment.oneDriveUrl || ""}
+                  onChange={(e) =>
+                    setEditingAssignment({
+                      ...editingAssignment,
+                      oneDriveUrl: e.target.value,
+                    })
+                  }
+                  placeholder="OneDrive URL"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none"
+                />
+
+                <textarea
+                  rows="4"
+                  required
+                  value={editingAssignment.description}
+                  onChange={(e) =>
+                    setEditingAssignment({
+                      ...editingAssignment,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Assignment Description"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none"
+                />
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingAssignment(null)}
+                    className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </main>

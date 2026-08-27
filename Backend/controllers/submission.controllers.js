@@ -5,28 +5,96 @@ const confirmSubmission = async (req, res) => {
     const { assignmentId, groupId } = req.body;
     const userId = req.user.id;
 
-    if (!assignmentId || !groupId) {
+    if (!assignmentId) {
       return res.status(400).json({
-        message: "Assignment ID and Group ID are required",
+        message: "Assignment ID is required",
       });
     }
 
     const parsedAssignmentId = parseInt(assignmentId, 10);
-    const parsedGroupId = parseInt(groupId, 10);
     const parsedUserId = parseInt(userId, 10);
 
-    if (!parsedAssignmentId || !parsedGroupId || !parsedUserId) {
+    if (!parsedAssignmentId || !parsedUserId) {
       return res.status(400).json({
         message: "Invalid submission data",
       });
     }
 
+    // Get assignment submission type
+    const assignmentResult = await pool.query(
+      `SELECT submission_type
+       FROM assignments
+       WHERE id = $1`,
+      [parsedAssignmentId],
+    );
+
+    if (assignmentResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Assignment not found",
+      });
+    }
+
+    const submissionType = assignmentResult.rows[0].submission_type || "Group";
+
+    // Individual submission
+    if (submissionType.toLowerCase() === "individual") {
+      const result = await pool.query(
+        `INSERT INTO submissions
+         (assignment_id, student_id, confirmed_by)
+         VALUES ($1, $2, $2)
+         RETURNING *`,
+        [parsedAssignmentId, parsedUserId],
+      );
+
+      return res.status(201).json({
+        message: "Submission confirmed successfully",
+        submission: result.rows[0],
+      });
+    }
+
+    // Group submission
+    if (!groupId) {
+      return res.status(400).json({
+        message: "Group ID is required for group assignments",
+      });
+    }
+
+    const parsedGroupId = parseInt(groupId, 10);
+
+    if (!parsedGroupId) {
+      return res.status(400).json({
+        message: "Invalid group ID",
+      });
+    }
+
+    // Check whether the student belongs to this group
+    const memberResult = await pool.query(
+      `SELECT role
+       FROM group_members
+       WHERE group_id = $1
+       AND student_id = $2`,
+      [parsedGroupId, parsedUserId],
+    );
+
+    if (memberResult.rows.length === 0) {
+      return res.status(403).json({
+        message: "You are not a member of this group",
+      });
+    }
+
+    // Only leader can acknowledge
+    if (memberResult.rows[0].role !== "leader") {
+      return res.status(403).json({
+        message: "Only the group leader can acknowledge the submission",
+      });
+    }
+
     const result = await pool.query(
-      `INSERT INTO submissions 
+      `INSERT INTO submissions
        (assignment_id, group_id, confirmed_by)
        VALUES ($1, $2, $3)
        RETURNING *`,
-      [parsedAssignmentId, parsedGroupId, parsedUserId]
+      [parsedAssignmentId, parsedGroupId, parsedUserId],
     );
 
     res.status(201).json({
@@ -38,7 +106,7 @@ const confirmSubmission = async (req, res) => {
 
     if (error.code === "23505") {
       return res.status(409).json({
-        message: "This assignment is already confirmed for this group",
+        message: "This assignment has already been submitted",
       });
     }
 
@@ -53,17 +121,23 @@ const getMySubmissions = async (req, res) => {
     const studentId = req.user.id;
 
     const result = await pool.query(
-      `SELECT 
+      `SELECT
         s.id,
         s.assignment_id,
+        s.student_id,
         s.group_id,
+        s.confirmed_by,
         s.confirmed_at
        FROM submissions s
-       JOIN group_members gm
-         ON s.group_id = gm.group_id
-       WHERE gm.student_id = $1
+       WHERE
+         s.student_id = $1
+         OR s.group_id IN (
+           SELECT group_id
+           FROM group_members
+           WHERE student_id = $1
+         )
        ORDER BY s.confirmed_at DESC`,
-      [studentId]
+      [studentId],
     );
 
     res.status(200).json({
@@ -87,16 +161,18 @@ const getAllSubmissions = async (req, res) => {
         a.course AS "course",
         a.professor AS "professor",
         g.name AS "groupName",
-        u.name AS "studentName",
-        u.email AS "studentEmail",
+        COALESCE(gu.name, u.name) AS "studentName",
+        COALESCE(gu.email, u.email) AS "studentEmail",
         s.confirmed_at AS "confirmedAt",
         a.onedrive_link AS "oneDriveUrl"
       FROM submissions s
       JOIN assignments a
         ON s.assignment_id = a.id
-      JOIN groups g
+      LEFT JOIN groups g
         ON s.group_id = g.id
-      JOIN users u
+      LEFT JOIN users gu
+        ON s.student_id = gu.id
+      LEFT JOIN users u
         ON g.created_by = u.id
       ORDER BY s.confirmed_at DESC
     `);
@@ -113,8 +189,4 @@ const getAllSubmissions = async (req, res) => {
   }
 };
 
-export {
-  confirmSubmission,
-  getMySubmissions,
-  getAllSubmissions,
-};
+export { confirmSubmission, getMySubmissions, getAllSubmissions };
