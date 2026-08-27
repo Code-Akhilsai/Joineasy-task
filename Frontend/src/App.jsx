@@ -8,6 +8,7 @@ import Group from "./Pages/Group";
 import AdminDashboard from "./Admin/AdminDashboard";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import "./App.css";
+import Assignments from "./Pages/Assignments";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/assignments" element={<Assignments />} />
         <Route
           path="/student"
           element={

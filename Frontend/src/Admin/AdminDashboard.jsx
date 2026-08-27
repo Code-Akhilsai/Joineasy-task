@@ -14,15 +14,13 @@ export default function AdminDashboard() {
     return () => window.removeEventListener("popstate", blockBack);
   }, []);
 
- 
-
   const [activeTab, setActiveTab] = useState("submissions");
   const [submissions, setSubmissions] = useState([]);
   const [groups, setGroups] = useState([]);
-   const [admin, setAdmin] = useState({
+  const [admin, setAdmin] = useState({
     name: "",
     email: "",
-   });
+  });
   const [newAssignment, setNewAssignment] = useState({
     title: "",
     course: "",
@@ -560,7 +558,7 @@ export default function AdminDashboard() {
                       })
                     }
                     placeholder="e.g. Aug 28, 2026 - 05:00 PM"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none scheme-dark"
                   />
                 </div>
               </div>

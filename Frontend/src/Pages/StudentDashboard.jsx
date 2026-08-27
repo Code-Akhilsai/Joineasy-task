@@ -82,7 +82,7 @@ export default function StudentDashboard() {
   const [assignments, setAssignments] = useState([]);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [stepOneChecked, setStepOneChecked] = useState(false);
-  const [activeTab, setActiveTab] = useState("assignments");
+  const [activeTab, setActiveTab] = useState("courses");
 
   const handleInviteMember = async (e) => {
     e.preventDefault();
@@ -126,7 +126,7 @@ export default function StudentDashboard() {
     try {
       const code = `CODE-${Math.floor(1000 + Math.random() * 9000)}`;
 
-      const response = await api.post(
+      await api.post(
         "/groups/create",
         {
           name: newGroupName,
@@ -240,7 +240,6 @@ export default function StudentDashboard() {
               </span>
               <span className="text-[11px] text-slate-400">
                 {student.email}
-                {student.id ? ` • ID: #${student.id}` : ""}
               </span>
             </div>
 
@@ -319,9 +318,9 @@ export default function StudentDashboard() {
         {/* Dashboard Nav Tabs */}
         <div className="flex border-b border-slate-800 gap-2 overflow-x-auto">
           <button
-            onClick={() => setActiveTab("assignments")}
+            onClick={() => setActiveTab("courses")}
             className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-              activeTab === "assignments"
+              activeTab === "courses"
                 ? "border-indigo-500 text-indigo-400 bg-indigo-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
@@ -339,7 +338,7 @@ export default function StudentDashboard() {
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            Assignments ({assignments.length})
+            My Courses ({assignments.length})
           </button>
 
           <button
@@ -391,42 +390,48 @@ export default function StudentDashboard() {
           </button>
         </div>
 
-        {/* TAB 1: ASSIGNMENTS & ONEDRIVE LINKS */}
-        {activeTab === "assignments" && (
+        {/* TAB 1: MY COURSES */}
+        {activeTab === "courses" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-white">
-                  Coursework & OneDrive Uploads
-                </h2>
-                <p className="text-slate-400 text-xs mt-1">
-                  Access professor OneDrive folders and verify your group
-                  submissions.
-                </p>
-              </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">My Courses</h2>
+
+              <p className="text-slate-400 text-xs mt-1">
+                Select a course to view its assignments and submission details.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              {assignments.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-slate-900/90 border border-slate-800 hover:border-slate-700 p-6 rounded-2xl space-y-4 transition-all duration-300 shadow-lg"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
-                    <div>
-                      <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
-                        {item.course}
-                      </span>
-                      <h3 className="text-lg font-bold text-white mt-0.5">
-                        {item.title}
-                      </h3>
-                    </div>
+            {/* Course Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...new Set(assignments.map((item) => item.course))].map(
+                (course) => {
+                  const courseAssignments = assignments.filter(
+                    (item) => item.course === course,
+                  );
 
-                    <div>
-                      {item.status === "submitted" ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-bold border border-emerald-500/30">
+                  const completed = courseAssignments.filter(
+                    (item) => item.status === "submitted",
+                  ).length;
+
+                  const courseProgress =
+                    courseAssignments.length > 0
+                      ? Math.round((completed / courseAssignments.length) * 100)
+                      : 0;
+
+                  return (
+                    <div
+                      key={course}
+                      onClick={() =>
+                        navigate(
+                          `/assignments?course=${encodeURIComponent(course)}`,
+                        )
+                      }
+                      className="group bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 p-6 rounded-2xl space-y-5 transition-all duration-300 shadow-lg cursor-pointer hover:-translate-y-1"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="w-11 h-11 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
                           <svg
-                            className="w-3.5 h-3.5"
+                            className="w-5 h-5 text-indigo-400"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -434,72 +439,14 @@ export default function StudentDashboard() {
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeWidth={2.5}
-                              d="M5 13l4 4L19 7"
+                              strokeWidth={2}
+                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"
                             />
                           </svg>
-                          Confirmed Submitted
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 text-xs font-bold border border-amber-500/30">
-                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                          Pending Submission
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                        </div>
 
-                  <p className="text-sm text-slate-300">{item.description}</p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-400 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
-                    <div>
-                      <span className="block text-slate-500 font-medium">
-                        Professor / Instructor
-                      </span>
-                      <span className="text-slate-200 font-semibold">
-                        {item.professor}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="block text-slate-500 font-medium">
-                        Due Date & Time
-                      </span>
-                      <span className="text-slate-200 font-semibold">
-                        {item.dueDate}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Actions Row: OneDrive Link & Confirm Button */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
-                    {/* OneDrive Submission Link */}
-                    <a
-                      href={item.oneDriveUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-4 py-2.5 rounded-xl bg-blue-600/15 hover:bg-blue-600/25 text-blue-300 border border-blue-500/30 text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <svg
-                        className="w-4 h-4 text-blue-400"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
-                      </svg>
-                      Open OneDrive Submission Folder ↗
-                    </a>
-
-                    {/* Two-Step Verification Button */}
-                    {item.status === "pending" ? (
-                      <button
-                        onClick={() => {
-                          setSelectedAssignment(item);
-                          setStepOneChecked(false);
-                        }}
-                        className="px-5 py-2.5 rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/30 flex items-center justify-center gap-2 cursor-pointer"
-                      >
                         <svg
-                          className="w-4 h-4"
+                          className="w-5 h-5 text-slate-600 group-hover:text-indigo-400 transition-colors"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -508,23 +455,57 @@ export default function StudentDashboard() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            d="M9 5l7 7-7 7"
                           />
                         </svg>
-                        Confirm Submission (Step 1 of 2)
-                      </button>
-                    ) : (
-                      <div className="text-right text-xs text-slate-400">
-                        Submitted on{" "}
-                        <span className="text-slate-200 font-semibold">
-                          {item.submittedAt}
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">
+                          {course}
+                        </h3>
+
+                        <p className="text-xs text-slate-400 mt-1">
+                          {courseAssignments.length}{" "}
+                          {courseAssignments.length === 1
+                            ? "Assignment"
+                            : "Assignments"}
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-400">Completion</span>
+
+                          <span className="text-emerald-400 font-semibold">
+                            {courseProgress}%
+                          </span>
+                        </div>
+
+                        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-linear-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500"
+                            style={{ width: `${courseProgress}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2 border-t border-slate-800">
+                        <span className="text-[11px] text-slate-500">
+                          {completed} of {courseAssignments.length} submitted
+                        </span>
+
+                        <span className="text-xs font-semibold text-indigo-400 group-hover:text-indigo-300">
+                          View Assignments →
                         </span>
                       </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    </div>
+                  );
+                },
+              )}
             </div>
+
+            {/* Assignments */}
           </div>
         )}
 
