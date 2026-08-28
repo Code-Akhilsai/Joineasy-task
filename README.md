@@ -1,5 +1,7 @@
 # JoinEazy – Student Assignment & Group Management System
 
+https://join-eazy.netlify.app
+
 JoinEazy is a full-stack web application designed to help students and faculty manage courses, assignments, student groups, and assignment submissions in one place.
 
 The application provides separate workflows for students and faculty/admin users, with role-based authentication and protected dashboards.
