@@ -517,17 +517,26 @@ Recommended screenshots:
 
 Example:
 
-```md
-!(screenshots/home.png)
 
-![Student Dashboard](screenshots/studentdashboard.png)
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/home.png)
 
-![Assignments](screenshots/assignments.png)
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/login.png)
 
-![Faculty Dashboard](screenshots/admindashboard.png)
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/studentdashboard.png)
 
-![Manage Assignments](screenshots/manageassignments.png)
-```
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/groups.png)
+
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/assignments.png)
+
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/submissions.png)
+
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/admindashboard.png)
+
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/studentsubmissions.png)
+
+![image alt](https://github.com/Code-Akhilsai/Joineasy-task/blob/684722b4f52140172a131b9be5673422f5caf659/screenshots/manageassignments.png)
+
+
 
 ---
 
